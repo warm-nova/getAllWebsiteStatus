@@ -12,30 +12,44 @@ public class MainProg {
 
 	static HttpURLConnection urlconnection;
 
+	public static boolean isValid(String strLink) 
+	{
+		URL url;
+		try {
+			url = new URL(strLink);
+			HttpURLConnection connt = (HttpURLConnection)url.openConnection();
+			connt.setConnectTimeout(3000);
+			connt.setReadTimeout(3000);
+			connt.setRequestMethod("GET");
+			connt.setRequestProperty("User-agent", "Mozilla/5.0 (Linux; Android 4.4.4; en-us; Nexus 5 Build/JOP40D) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2307.2 Mobile Safari/537.36");
+			String strMessage = connt.getResponseMessage();
+			System.out.println(strMessage);
+			if (strMessage.compareTo("Not Found") == 0) {
+				return false;
+			}
+			connt.disconnect();
+		} catch (Exception e) {
+		return false;
+		}
+		return true;
+	}
+	
 	public static int isWebsiteCanAccess(String netAddr) {
-		int count = 0;
+		
 		int returnvalue = 0;
-		while (count < 3) {
-			try {
+		try {
 				URL url = new URL(netAddr + "/");
 				urlconnection = (HttpURLConnection) url.openConnection();
 				int returncode = urlconnection.getResponseCode();
-
-				if (returncode == 404) {
-					urlconnection.disconnect();
-					returnvalue = 404;
-				} else {
-					returnvalue = returncode;
-					urlconnection.disconnect();
-					break;
-				}
+				returnvalue = returncode;
+				urlconnection.disconnect();
+				
 
 			} catch (Exception e) {
 				returnvalue = -1;
-				continue;
+				
 			}
-			count++;
-		}
+		
 		return returnvalue;
 	}
 
@@ -44,7 +58,7 @@ public class MainProg {
 			Document document = Jsoup.connect("http://h5.mse.360.cn")
 					.userAgent(
 							"Mozilla/5.0 (Linux; Android 4.4.4; en-us; Nexus 5 Build/JOP40D) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2307.2 Mobile Safari/537.36")
-					.timeout(5000).post();
+					.timeout(5000).get();
 
 			// 获取标题
 			String title = document.title();
@@ -55,9 +69,9 @@ public class MainProg {
 
 			for (Element link : links) {
 				String linkaddr = link.attr("abs:href");
-				if (linkaddr.contains("haosou") || linkaddr.contains("360") || linkaddr.contains("https"))
+				if (linkaddr.contains("haosou") || linkaddr.contains("360"))
 					continue;
-				System.out.println(linkaddr + "     " + link.text() + "  RETURN:   " + isWebsiteCanAccess(linkaddr));
+				System.out.println(linkaddr + "     " + link.text()+"   "+isValid(linkaddr));
 			}
 
 		} catch (Exception e)
